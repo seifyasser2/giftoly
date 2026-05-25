@@ -118,14 +118,14 @@ const GiftDetailPage = () => {
   };
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: gift.id,
-        name: gift.name,
-        price: gift.sale_price || gift.price,
-        image: images.find(img => img.is_primary)?.image_url || images[0]?.image_url,
-      });
-    }
+    const primaryImage = images.find(img => img.is_primary)?.image_url || images[0]?.image_url;
+
+    addToCart({
+      id: gift.id,
+      name: gift.name,
+      price: gift.sale_price || gift.price,
+      image: primaryImage,
+    }, quantity);
   };
 
   const nextImage = () => {

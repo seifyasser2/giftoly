@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import GiftCard from '../components/GiftCard.jsx';
-import { Search, SlidersHorizontal, PackageX, Loader } from 'lucide-react';
+import { useCart } from '../context/CartContext.jsx';
+import { Search, SlidersHorizontal, PackageX, Loader, ShoppingCart, Check, Plus } from 'lucide-react';
 
 const GiftsPage = () => {
   const [categories, setCategories] = useState([]);
@@ -10,6 +10,8 @@ const GiftsPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [addingToCart, setAddingToCart] = useState(null);
+  const { addToCart, isInCart, getItemQuantity } = useCart();
 
   useEffect(() => {
     fetchData();
@@ -52,6 +54,27 @@ const GiftsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddToCart = async (e, gift) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setAddingToCart(gift.id);
+
+    const primaryImage = gift.gift_images?.find(img => img.is_primary)?.image_url || gift.gift_images?.[0]?.image_url;
+
+    addToCart({
+      id: gift.id,
+      name: gift.name,
+      price: gift.sale_price || gift.price,
+      image: primaryImage,
+    });
+
+    // تحريك تأخير بسيط لإظهار التأثير
+    setTimeout(() => {
+      setAddingToCart(null);
+    }, 600);
   };
 
   const filteredGifts = gifts.filter(gift => {
@@ -134,14 +157,17 @@ const GiftsPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredGifts.map(gift => {
               const primaryImage = gift.gift_images?.find(img => img.is_primary)?.image_url || gift.gift_images?.[0]?.image_url;
+              const inCart = isInCart(gift.id);
+              const quantity = getItemQuantity(gift.id);
+              const isAdding = addingToCart === gift.id;
+
               return (
-                <Link
+                <div
                   key={gift.id}
-                  to={`/gift/${gift.slug}`}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col group"
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col group relative"
                 >
                   {/* Product Image Wrapper */}
-                  <div className="relative aspect-square overflow-hidden bg-gray-50">
+                  <Link to={`/gift/${gift.slug}`} className="relative aspect-square overflow-hidden bg-gray-50 block">
                     <img
                       src={primaryImage}
                       alt={gift.name}
@@ -153,14 +179,47 @@ const GiftsPage = () => {
                         خصم {Math.round(((gift.price - gift.sale_price) / gift.price) * 100)}%
                       </span>
                     )}
-                  </div>
+
+                    {/* Quick Add Button - appears on hover (desktop) */}
+                    <button
+                      onClick={(e) => handleAddToCart(e, gift)}
+                      disabled={isAdding}
+                      className={`absolute bottom-3 left-3 right-3 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 ${
+                        isAdding
+                          ? 'bg-emerald-500 text-white'
+                          : inCart
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-[#FF1493] hover:bg-[#C71585] text-white'
+                      } font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95`}
+                    >
+                      {isAdding ? (
+                        <>
+                          <Check size={18} />
+                          <span className="text-sm">تمت الإضافة!</span>
+                        </>
+                      ) : inCart ? (
+                        <>
+                          <ShoppingCart size={18} />
+                          <span className="text-sm">في السلة ({quantity})</span>
+                          <Plus size={16} />
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart size={18} />
+                          <span className="text-sm">إضافة للسلة</span>
+                        </>
+                      )}
+                    </button>
+                  </Link>
 
                   {/* Content */}
                   <div className="p-5 flex flex-col flex-1 justify-between">
                     <div>
-                      <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#FF1493] transition-colors">
-                        {gift.name}
-                      </h3>
+                      <Link to={`/gift/${gift.slug}`}>
+                        <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-[#FF1493] transition-colors">
+                          {gift.name}
+                        </h3>
+                      </Link>
                       <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-4">
                         {gift.description}
                       </p>
@@ -181,9 +240,36 @@ const GiftsPage = () => {
                           </span>
                         )}
                       </div>
+
+                      {/* Add to cart button - always visible on mobile */}
+                      <button
+                        onClick={(e) => handleAddToCart(e, gift)}
+                        disabled={isAdding}
+                        className={`md:hidden p-3 rounded-xl transition-all ${
+                          isAdding
+                            ? 'bg-emerald-500 text-white'
+                            : inCart
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-[#FF1493] hover:bg-[#C71585] text-white'
+                        } shadow-md active:scale-95`}
+                      >
+                        {isAdding ? (
+                          <Check size={20} />
+                        ) : (
+                          <ShoppingCart size={20} />
+                        )}
+                      </button>
                     </div>
                   </div>
-                </Link>
+
+                  {/* In Cart Indicator Badge */}
+                  {inCart && (
+                    <div className="absolute top-3 left-3 bg-emerald-500 text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shadow-md">
+                      <ShoppingCart size={12} />
+                      <span>{quantity}</span>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
