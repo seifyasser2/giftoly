@@ -1,21 +1,30 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import CartItem from '../components/CartItem.jsx';
 import { MessageCircle, ShoppingBag, ArrowRight, Trash2, ShieldCheck } from 'lucide-react';
 import { CONTACT } from '../data/gifts.js';
 
-const CartPage = ({ onPageChange }) => {
+const CartPage = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
 
   const handleWhatsAppOrder = () => {
     if (cartItems.length === 0) return;
-    
+
     const itemsList = cartItems
-      .map(item => `• ${item.name} (عدد: ${item.quantity}) -> بسعر: ${item.price * item.quantity} ج.م`)
+      .map(item => `- ${item.name} (العدد: ${item.quantity}) = ${item.price * item.quantity} ج.م`)
       .join('\n');
-      
+
     const totalPrice = getTotalPrice();
-    const message = `مرحباً متجر Giftoly ✨\nأود إرسال طلب شراء للهدايا التالية:\n\n${itemsList}\n\n• الإجمالي الكلي للطلب: ${totalPrice} ج.م\n\nأرجو تأكيد الطلب وتحديد موعد التوصيل 🎁`;
+    const message = `مرحباً متجر Giftoly ✨
+
+أود إرسال طلب شراء للهدايا التالية:
+
+${itemsList}
+
+الإجمالي الكلي للطلب: ${totalPrice} ج.م
+
+أرجو تأكيد الطلب وتحديد موعد التوصيل 🎁`;
 
     const whatsappLink = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(message)}`;
     window.open(whatsappLink, '_blank');
@@ -26,14 +35,14 @@ const CartPage = ({ onPageChange }) => {
       {/* Header */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 mb-2">سلة المشتريات 🛒</h1>
+          <h1 className="text-4xl font-black text-gray-900 mb-2">سلة المشتريات</h1>
           <p className="text-gray-500 text-sm md:text-base">
             {cartItems.length > 0
               ? `لديك حالياً ${cartItems.length} هدايا مميزة جاهزة للتغليف والطلب`
               : 'تصفح المتجر وأضف هداياك المفضلة هنا'}
           </p>
         </div>
-        
+
         {cartItems.length > 0 && (
           <button
             onClick={clearCart}
@@ -92,13 +101,13 @@ const CartPage = ({ onPageChange }) => {
                 <span>إرسال وتأكيد الطلب عبر الواتساب</span>
               </button>
 
-              <button
-                onClick={() => onPageChange('gifts')}
+              <Link
+                to="/gifts"
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-sm"
               >
                 <ArrowRight size={16} />
                 <span>العودة لمتابعة التسوق</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -112,12 +121,12 @@ const CartPage = ({ onPageChange }) => {
           <p className="text-gray-400 mb-8 max-w-xs mx-auto text-sm md:text-base leading-relaxed">
             يبدو أنك لم تقم بإضافة أي من هدايانا الفاخرة بعد. تصفح الكتالوج واصنع السعادة الآن.
           </p>
-          <button
-            onClick={() => onPageChange('gifts')}
+          <Link
+            to="/gifts"
             className="bg-[#FF1493] hover:bg-[#C71585] text-white font-black py-3.5 px-10 rounded-xl transition-all shadow-lg shadow-pink-100 inline-flex items-center gap-2 text-md active:scale-95"
           >
             <span>ابدأ بتصفح الهدايا</span>
-          </button>
+          </Link>
         </div>
       )}
     </div>

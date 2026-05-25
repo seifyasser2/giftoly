@@ -26,6 +26,12 @@
   html, body, #root {
     height: 100%;
   }
+
+  /* تحسينات للصور */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* تحسين شريط التمرير */
@@ -72,12 +78,25 @@
   }
 }
 
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out forwards;
 }
 
 .animate-slide-in-right {
   animation: slideInRight 0.5s ease-out;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
 }
 
 /* Utility Classes */
@@ -102,4 +121,42 @@
 
 ::-moz-selection {
   @apply bg-pink-200 text-gray-900;
+}
+
+/* تحسينات للطباعة */
+@media print {
+  header, footer, nav {
+    display: none;
+  }
+
+  main {
+    padding: 0;
+  }
+}
+
+/* تحسين الخطوط العربي */
+.font-arabic {
+  font-family: 'Cairo', 'Segoe UI', 'Tahoma', sans-serif;
+}
+
+/* تأثيرات الزر المتقدم */
+.btn-primary {
+  @apply bg-[#FF1493] hover:bg-[#C71585] text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-pink-100 hover:shadow-xl hover:shadow-pink-200 active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-white hover:bg-gray-50 text-gray-700 font-bold py-3 px-6 rounded-xl transition-all border border-gray-200 shadow-sm;
+}
+
+.btn-success {
+  @apply bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-emerald-100 active:scale-[0.98];
+}
+
+/* Cards */
+.card {
+  @apply bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300;
+}
+
+.card-image {
+  @apply aspect-square overflow-hidden bg-gray-50;
 }
