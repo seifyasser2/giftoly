@@ -160,3 +160,33 @@
 .card-image {
   @apply aspect-square overflow-hidden bg-gray-50;
 }
+
+/* Safe Area for Mobile Bottom Navigation */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile Bottom Nav Spacing */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 0;
+  }
+
+  main {
+    padding-bottom: 1rem;
+  }
+}
+
+/* Smooth scrolling on mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .safe-area-pb {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  }
+}

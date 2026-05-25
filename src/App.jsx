@@ -13,9 +13,9 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-[#fcf8fa] flex flex-col justify-between antialiased">
-        <div>
+        <div className="flex-1 flex flex-col">
           <Header />
-          <main className="pb-20 md:pb-0">
+          <main className="flex-1 pb-24 md:pb-8">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/gifts" element={<GiftsPage />} />
