@@ -13,7 +13,7 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     try {
-      const saved = localStorage.getItem('giftoly_cart');
+      const saved = localStorage.getItem('giftoly_cart_v2');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -22,9 +22,10 @@ export const CartProvider = ({ children }) => {
 
   const [notification, setNotification] = useState(null);
 
+  // حفظ السلة في localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('giftoly_cart', JSON.stringify(cartItems));
+      localStorage.setItem('giftoly_cart_v2', JSON.stringify(cartItems));
     } catch {
       console.error('Failed to save cart to localStorage');
     }
@@ -38,24 +39,25 @@ export const CartProvider = ({ children }) => {
     setNotification(null);
   };
 
-  const addToCart = (gift) => {
+  const addToCart = (gift, quantity = 1) => {
     setCartItems(prev => {
       const existingItem = prev.find(item => item.id === gift.id);
       if (existingItem) {
         showNotification(`تم زيادة كمية ${gift.name} في السلة`, 'success');
         return prev.map(item =>
-          item.id === gift.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === gift.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       } else {
         showNotification(`تم إضافة ${gift.name} إلى السلة بنجاح`, 'success');
-        return [...prev, { ...gift, quantity: 1 }];
+        return [...prev, { ...gift, quantity }];
       }
     });
   };
 
   const removeFromCart = (giftId) => {
+    const item = cartItems.find(i => i.id === giftId);
     setCartItems(prev => prev.filter(item => item.id !== giftId));
-    showNotification('تم حذف المنتج من السلة', 'info');
+    showNotification(`تم حذف ${item?.name || 'المنتج'} من السلة`, 'info');
   };
 
   const updateQuantity = (giftId, quantity) => {
@@ -73,6 +75,15 @@ export const CartProvider = ({ children }) => {
     showNotification('تم إفراغ السلة بالكامل', 'info');
   };
 
+  const isInCart = (giftId) => {
+    return cartItems.some(item => item.id === giftId);
+  };
+
+  const getItemQuantity = (giftId) => {
+    const item = cartItems.find(i => i.id === giftId);
+    return item?.quantity || 0;
+  };
+
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
@@ -88,6 +99,8 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
+      isInCart,
+      getItemQuantity,
       getTotalPrice,
       getTotalItems,
       notification,
