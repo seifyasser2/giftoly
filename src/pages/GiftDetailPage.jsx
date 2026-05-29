@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseAvailable } from '../lib/supabase';
 import { useCart } from '../context/CartContext.jsx';
 import {
   ShoppingCart,
@@ -34,6 +34,7 @@ const GiftDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchGiftDetails();
@@ -42,6 +43,13 @@ const GiftDetailPage = () => {
   const fetchGiftDetails = async () => {
     try {
       setLoading(true);
+      
+      // التحقق من توفر Supabase
+      if (!isSupabaseAvailable()) {
+        setError('قاعدة البيانات غير متاحة حالياً. تحقق من ملف .env');
+        setLoading(false);
+        return;
+      }
 
       // جلب تفاصيل الهدية
       const { data: giftData, error: giftError } = await supabase
@@ -66,11 +74,11 @@ const GiftDetailPage = () => {
 
       setGift(giftData);
 
-      // جلب الصور
+      // جلب الصور - تصحيح: استخدام gift_id بدلاً من gallery_id
       const { data: imagesData } = await supabase
         .from('gift_images')
         .select('*')
-        .eq('gallery_id', giftData.id)
+        .eq('gift_id', giftData.id)
         .order('sort_order', { ascending: true });
 
       setImages(imagesData || []);
@@ -112,6 +120,7 @@ const GiftDetailPage = () => {
       }
     } catch (err) {
       console.error('Error:', err);
+      setError('حدث خطأ أثناء تحميل تفاصيل الهدية');
     } finally {
       setLoading(false);
     }
@@ -147,6 +156,22 @@ const GiftDetailPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#FF1493]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md text-center">
+          <p className="text-red-600 font-bold text-lg mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/gifts')}
+            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
+          >
+            العودة للهدايا
+          </button>
+        </div>
       </div>
     );
   }
